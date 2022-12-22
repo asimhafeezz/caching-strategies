@@ -4,4 +4,4 @@ There many cache strategies, but we have discussed some of them.
 2. Write-Behind Cache
 3. Write-Through Cache
 
-> These implementation are just to understand how these caching strategies can be achieved.
+> These implementations are just to understand how these caching strategies can be achieved.

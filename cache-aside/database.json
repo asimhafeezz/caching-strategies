@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1",
+    "name": "John",
+    "username": "john",
+    "age": "30",
+    "city": "New York"
+  },
+  {
+    "id": "2",
+    "name": "Peter",
+    "username": "peter",
+    "age": "40",
+    "city": "Boston"
+  },
+  {
+    "id": "3",
+    "name": "Sally",
+    "username": "sally",
+    "age": "50",
+    "city": "Los Angeles"
+  },
+  {
+    "username": "asim",
+    "name": "Asim",
+    "age": "15",
+    "city": "Sarai",
+    "id": 4
+  },
+  {
+    "username": "asim1",
+    "name": "Asim1111",
+    "age": "151",
+    "city": "Sarai1111",
+    "id": 5
+  }
+]

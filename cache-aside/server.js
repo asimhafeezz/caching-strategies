@@ -1,16 +1,19 @@
 const express = require("express")
 const redis = require("redis")
 const axios = require("axios")
+const { fetchUser, addUser } = require("./API")
 const app = express()
-
-const PORT = 8080
-const REDIS_PORT = 6379
-
-const redisClient = redis.createClient(REDIS_PORT)
 
 //middleware
 app.use(express.json())
 
+const PORT = 8080
+const REDIS_PORT = 6379
+
+// redis client
+const redisClient = redis.createClient(REDIS_PORT)
+
+// cache middleware to read data from redis
 async function checkCache(req, res, next) {
 	const { username } = req.params
 
@@ -21,35 +24,44 @@ async function checkCache(req, res, next) {
 			data: data,
 		})
 	} else {
-		console.log("next")
 		next()
 	}
 }
 
-app.get("/data/:username", checkCache, (req, res) => {
+// get user by username
+app.get("/:username", checkCache, async (req, res) => {
 	try {
 		const { username } = req.params
 
-		axios.get(`https://api.github.com/users/${username}`).then(async response => {
-			const data = response.data
-			const userData = {
-				name: data.name,
-				bio: data.bio,
-				public_repos: data.public_repos,
-				following: data.following,
-				followers: data.followers,
-			}
-			//set data to redis
-			await redisClient.hSet(username, userData)
+		const data = await fetchUser(username)
+		await redisClient.hSet(username, data)
 
-			res.send({
-				source: "api",
-				data: userData,
-			})
+		res.send({
+			source: "api",
+			data,
 		})
 	} catch (err) {
-		console.log(err)
-		res.status(500).send("Server Error")
+		res.status(404).send({
+			success: false,
+			error: err,
+		})
+	}
+})
+
+// add user to database and redis
+app.post("/", async (req, res) => {
+	try {
+		const data = await addUser(req.body)
+		await redisClient.hSet(data.username, data)
+		res.send({
+			success: true,
+			data,
+		})
+	} catch (err) {
+		res.status(404).send({
+			success: false,
+			error: err,
+		})
 	}
 })
 
@@ -59,6 +71,7 @@ app.get("/data/:username", checkCache, (req, res) => {
 	console.log("Redis connected")
 })()
 
+// start server
 app.listen(PORT, () => {
 	console.log(`Server listening on port ${PORT}`)
 })

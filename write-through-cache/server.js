@@ -1,6 +1,5 @@
 const express = require("express")
 const redis = require("redis")
-const axios = require("axios")
 const { fetchUser, addUser } = require("./API")
 const app = express()
 
@@ -51,8 +50,8 @@ app.get("/:username", checkCache, async (req, res) => {
 // add user to database and redis
 app.post("/", async (req, res) => {
 	try {
+		await redisClient.hSet(req.body.username, req.body)
 		const data = await addUser(req.body)
-		await redisClient.hSet(data.username, data)
 		res.send({
 			success: true,
 			data,

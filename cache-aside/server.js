@@ -1,50 +1,21 @@
 const express = require("express")
-const redis = require("redis")
-const axios = require("axios")
-const { fetchUser, addUser } = require("./API")
+const { fetchUser, addUser, responseFormat } = require("./common")
+const { checkCache } = require("./middleware")
+const redisClient = require("./config")
 const app = express()
 
 //middleware
 app.use(express.json())
 
-const PORT = 8080
-const REDIS_PORT = 6379
-
-// redis client
-const redisClient = redis.createClient(REDIS_PORT)
-
-// cache middleware to read data from redis
-async function checkCache(req, res, next) {
-	const { username } = req.params
-
-	const data = await redisClient.hGetAll(username)
-	if (Object.keys(data).length > 0) {
-		return res.send({
-			source: "cache",
-			data: data,
-		})
-	} else {
-		next()
-	}
-}
-
 // get user by username
 app.get("/:username", checkCache, async (req, res) => {
 	try {
 		const { username } = req.params
-
 		const data = await fetchUser(username)
 		await redisClient.hSet(username, data)
-
-		res.send({
-			source: "api",
-			data,
-		})
+		res.send(responseFormat(true, "successfully fetched user", data))
 	} catch (err) {
-		res.status(404).send({
-			success: false,
-			error: err,
-		})
+		res.status(404).send(responseFormat(false, err))
 	}
 })
 
@@ -53,15 +24,9 @@ app.post("/", async (req, res) => {
 	try {
 		const data = await addUser(req.body)
 		await redisClient.hSet(data.username, data)
-		res.send({
-			success: true,
-			data,
-		})
+		res.send(responseFormat(true, "successfully created user", req.body))
 	} catch (err) {
-		res.status(404).send({
-			success: false,
-			error: err,
-		})
+		res.status(404).send(responseFormat(false, err))
 	}
 })
 
@@ -70,6 +35,9 @@ app.post("/", async (req, res) => {
 	await redisClient.connect()
 	console.log("Redis connected")
 })()
+
+//PORT
+const PORT = 8080
 
 // start server
 app.listen(PORT, () => {

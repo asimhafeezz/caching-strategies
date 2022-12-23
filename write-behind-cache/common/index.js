@@ -42,17 +42,11 @@ const addUser = user => {
 
 // response format
 const responseFormat = (success, message, data) => {
+	const obj = { success, message }
 	if (data) {
-		return {
-			success,
-			message,
-			data,
-		}
+		obj.data = data
 	}
-	return {
-		success,
-		message,
-	}
+	return obj
 }
 
 module.exports = {

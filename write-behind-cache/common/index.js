@@ -3,7 +3,7 @@ const fs = require("fs")
 // fetch user from database
 const fetchUser = username => {
 	return new Promise((resolve, reject) => {
-		fs.readFile("./database.json", "utf8", (err, data) => {
+		fs.readFile("./data/database.json", "utf8", (err, data) => {
 			if (err) reject({ error: "Database error" })
 			const user = JSON.parse(data)?.find(user => user.username === username)
 			setTimeout(() => {
@@ -20,7 +20,7 @@ const fetchUser = username => {
 // add user to database
 const addUser = user => {
 	return new Promise((resolve, reject) => {
-		fs.readFile("./database.json", "utf8", (err, data) => {
+		fs.readFile("./data/database.json", "utf8", (err, data) => {
 			if (err) reject({ error: "Database Read error" })
 			const newData = JSON.parse(data)
 			setTimeout(() => {
@@ -30,7 +30,7 @@ const addUser = user => {
 				} else {
 					user.id = newData.length + 1
 					newData.push(user)
-					fs.writeFile("./database.json", JSON.stringify(newData, null, 2), err => {
+					fs.writeFile("./data/database.json", JSON.stringify(newData, null, 2), err => {
 						if (err) reject({ error: "Database Write error" })
 						resolve(user)
 					})
@@ -40,7 +40,23 @@ const addUser = user => {
 	})
 }
 
+// response format
+const responseFormat = (success, message, data) => {
+	if (data) {
+		return {
+			success,
+			message,
+			data,
+		}
+	}
+	return {
+		success,
+		message,
+	}
+}
+
 module.exports = {
 	fetchUser,
 	addUser,
+	responseFormat,
 }
